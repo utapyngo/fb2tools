@@ -2,40 +2,83 @@
 
 <xsl:stylesheet version="2.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
   xpath-default-namespace="http://www.gribuser.ru/xml/fictionbook/2.0">
 
-  <xsl:template match="/FictionBook">
-    <xsl:for-each select="body/section">
-      <xsl:variable name="title" select="title/p/text()" />
-      <xsl:variable name="booktitle" select="/FictionBook/description/title-info/book-title" />
-      <xsl:message>
-        <xsl:value-of select="$title" />
-      </xsl:message>
-      <xsl:result-document method="xml" indent="yes" encoding="UTF-8" href="{$booktitle}/{substring(concat('0', position()), string-length(string(position())) )} {$title}.fb2">
-        <FictionBook>
-          <xsl:copy-of select="/FictionBook/@*" />
-          <description>
-            <xsl:copy-of select="/FictionBook/description/title-info" />
-            <document-info>
-              <xsl:copy-of select="/FictionBook/description/document-info/author" />
-              <date>
-                <xsl:attribute name="value">
-                  <xsl:value-of select="current-date()"/>
-                </xsl:attribute>
-                <xsl:value-of select="current-date()"/>
-              </date>
-              <id>
-                <xsl:value-of select="current-dateTime()"/>
-              </id>
-              <xsl:copy-of select="/FictionBook/description/document-info/version" />
-            </document-info>
-          </description>
-          <body>
-            <xsl:copy-of select="./*" />
-          </body>
-        </FictionBook>
-      </xsl:result-document>
-    </xsl:for-each>
+  <xsl:variable name="num-sections" select="count(/FictionBook/body/section)" />
+
+  <xsl:template match="*|@*">
+    <xsl:param name="title" />
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*">
+        <xsl:with-param name="title" select="$title" />
+      </xsl:apply-templates>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="/FictionBook/description/document-info/date">
+    <date>
+      <xsl:attribute name="value">
+        <xsl:value-of select="current-date()"/>
+      </xsl:attribute>
+      <xsl:value-of select="current-date()"/>
+    </date>
+  </xsl:template>
+
+  <xsl:template match="/FictionBook/description/document-info/id">
+    <id>
+      <xsl:value-of select="current-dateTime()"/>
+    </id>
+  </xsl:template>
+
+  <xsl:template match="/FictionBook/description/title-info/book-title">
+    <xsl:param name="title" />
+    <book-title>
+      <xsl:value-of select="$title" />
+    </book-title>
+  </xsl:template>
+
+  <xsl:template name="description">
+    <xsl:param name="title" />
+    <xsl:apply-templates select="/FictionBook/description">
+      <xsl:with-param name="title" select="$title" />
+    </xsl:apply-templates>
+  </xsl:template>
+
+  <xsl:template match="/FictionBook/body/section">
+    <xsl:choose>
+      <xsl:when test="$num-sections > 1">
+        <xsl:variable name="title" select="replace(title/p/text(), '&quot;', '')" />
+        <xsl:variable name="booktitle" select="/FictionBook/description/title-info/book-title" />
+        <xsl:variable name="index"><xsl:number/></xsl:variable>
+        <xsl:variable name="padded-index" select="substring(concat('0', $index), string-length(string($index)) )" />
+        <xsl:message>
+          <xsl:value-of select="$title" />
+        </xsl:message>
+        <xsl:result-document method="xml" indent="yes" encoding="UTF-8" href="{$booktitle}/{$padded-index} {$title}.fb2">
+          <FictionBook>
+            <xsl:call-template name="description">
+              <xsl:with-param name="title" select="$title" />
+            </xsl:call-template>
+            <body>
+              <xsl:choose>
+                <xsl:when test="section">
+                  <xsl:copy-of select="./*" copy-namespaces="no" />
+                </xsl:when>
+                <xsl:otherwise>
+                  <section>
+                    <xsl:copy-of select="./*" copy-namespaces="no" />
+                  </section>
+                </xsl:otherwise>
+              </xsl:choose>
+            </body>
+          </FictionBook>
+        </xsl:result-document>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:message>Nothing to split. There is only one section in this file.</xsl:message>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
 </xsl:stylesheet>
