@@ -14,16 +14,21 @@
     </xsl:copy>
   </xsl:template>
 
+  <xsl:template name="smalltext">
+    <sup><sub><xsl:value-of select="text()"/></sub></sup>
+  </xsl:template>
+
   <xsl:template match="//a[@type='note']">
+    <xsl:variable name="ref" select="substring( @l:href, 2 )"/>
     <xsl:choose>
-      <xsl:when test="key('note', substring( @l:href, 2 ) )">
-        <xsl:for-each select="key('note', substring( @l:href, 2 ) )">
-          <sub><sup><xsl:value-of select="text()"/></sup></sub>
+      <xsl:when test="key('note', $ref )">
+        <xsl:for-each select="key('note', $ref )">
+          <xsl:call-template name="smalltext"/>
         </xsl:for-each>
       </xsl:when>
-      <xsl:when test="key( 'note', encode-for-uri( substring( @l:href, 2 ) ) )">
-        <xsl:for-each select="key( 'note', encode-for-uri( substring( @l:href, 2 ) ) )">
-          <sub><sup><xsl:value-of select="text()"/></sup></sub>
+      <xsl:when test="key( 'note', encode-for-uri( $ref ) )">
+        <xsl:for-each select="key( 'note', encode-for-uri( $ref ) )">
+          <xsl:call-template name="smalltext"/>
         </xsl:for-each>
       </xsl:when>
       <xsl:otherwise>
