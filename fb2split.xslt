@@ -48,14 +48,15 @@
   <xsl:template match="/FictionBook/body/section">
     <xsl:choose>
       <xsl:when test="$num-sections > 1">
-        <xsl:variable name="title" select="replace(title/p/text(), '&quot;', '')" />
+        <xsl:variable name="title" select="if (title/*/*/text()) then title/*/*/text() else title/*/text()" />
+        <xsl:variable name="title-escaped" select="translate($title, '&quot;:?\/*|&lt;&gt;', '')" />
         <xsl:variable name="booktitle" select="/FictionBook/description/title-info/book-title" />
         <xsl:variable name="index"><xsl:number/></xsl:variable>
         <xsl:variable name="padded-index" select="substring(concat('0', $index), string-length(string($index)) )" />
         <xsl:message>
           <xsl:value-of select="$title" />
         </xsl:message>
-        <xsl:result-document method="xml" indent="yes" encoding="UTF-8" href="{$booktitle}/{$padded-index} {$title}.fb2">
+        <xsl:result-document method="xml" indent="yes" encoding="UTF-8" href="{$booktitle}/{$padded-index} {$title-escaped}.fb2">
           <FictionBook>
             <xsl:call-template name="description">
               <xsl:with-param name="title" select="$title" />
