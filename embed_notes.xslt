@@ -15,7 +15,9 @@
   </xsl:template>
 
   <xsl:template name="smalltext">
-    <sup><sub><xsl:value-of select="text()"/></sub></sup>
+    <sup>
+      <xsl:copy-of select="node()"></xsl:copy-of>
+    </sup>
   </xsl:template>
 
   <xsl:template match="//a[@type='note']">
