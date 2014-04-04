@@ -2,6 +2,7 @@
 
 <xsl:stylesheet version="2.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:l="http://www.w3.org/1999/xlink"
   xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
   xpath-default-namespace="http://www.gribuser.ru/xml/fictionbook/2.0">
 
@@ -31,6 +32,9 @@
     </id>
   </xsl:template>
 
+  <xsl:template match="/FictionBook/description/title-info/annotation">
+  </xsl:template>
+
   <xsl:template match="/FictionBook/description/title-info/book-title">
     <xsl:param name="title" />
     <book-title>
@@ -52,7 +56,7 @@
         <xsl:variable name="title-escaped" select="translate($title, '&quot;:?\/*|&lt;&gt;', '')" />
         <xsl:variable name="booktitle" select="/FictionBook/description/title-info/book-title" />
         <xsl:variable name="index"><xsl:number/></xsl:variable>
-        <xsl:variable name="padded-index" select="substring(concat('0', $index), string-length(string($index)) )" />
+        <xsl:variable name="padded-index" select="format-number($index, substring('0000000', 1, string-length(string($num-sections))))"/>
         <xsl:message>
           <xsl:value-of select="$title" />
         </xsl:message>
